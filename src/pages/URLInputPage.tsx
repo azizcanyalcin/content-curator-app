@@ -34,12 +34,12 @@ const URLInputPage = () => {
 
   const submitMutation = useMutation({
     mutationFn: async (url: string): Promise<APIResponse> => {
-      const response = await fetch("https://api.dring.ai/automation", {
+      const response = await fetch("http://localhost:9000/automation/parse-website", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ website: url }),
       });
 
       if (!response.ok) {
