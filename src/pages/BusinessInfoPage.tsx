@@ -75,48 +75,40 @@ const BusinessInfoPage = () => {
   const transferEnabled = form.watch("transferEnabled");
 
   useEffect(() => {
-    if (!businessData) {
-      toast({
-        title: "No data found",
-        description: "Please start by entering a website URL",
-        variant: "destructive",
-      });
-      navigate("/");
-      return;
+    if (businessData) {
+      // Populate form with API response data
+      const populateForm = () => {
+        const updates: Partial<BusinessInfoFormData> = {};
+        
+        if (businessData.agentName) updates.agentName = businessData.agentName;
+        if (businessData.hotelName) updates.hotelName = businessData.hotelName;
+        if (businessData.address) updates.address = businessData.address;
+        if (businessData.concept) updates.concept = businessData.concept;
+        if (businessData.restaurantFood) updates.restaurantFood = businessData.restaurantFood;
+        if (businessData.faq) updates.faq = businessData.faq;
+        
+        // Features
+        if (businessData.features) {
+          updates.reservationEnabled = businessData.features.includes("reservation");
+          updates.transferEnabled = businessData.features.includes("transfer");
+          updates.restaurantEnabled = businessData.features.includes("restaurant");
+          updates.spaEnabled = businessData.features.includes("spa");
+          updates.gymEnabled = businessData.features.includes("gym");
+          updates.poolEnabled = businessData.features.includes("pool");
+          updates.businessCenterEnabled = businessData.features.includes("business_center");
+        }
+        
+        if (businessData.reservationLink) updates.reservationLink = businessData.reservationLink;
+        if (businessData.transferPolicy) updates.transferPolicy = businessData.transferPolicy;
+
+        Object.entries(updates).forEach(([key, value]) => {
+          form.setValue(key as keyof BusinessInfoFormData, value);
+        });
+      };
+
+      populateForm();
     }
-
-    // Populate form with API response data
-    const populateForm = () => {
-      const updates: Partial<BusinessInfoFormData> = {};
-      
-      if (businessData.agentName) updates.agentName = businessData.agentName;
-      if (businessData.hotelName) updates.hotelName = businessData.hotelName;
-      if (businessData.address) updates.address = businessData.address;
-      if (businessData.concept) updates.concept = businessData.concept;
-      if (businessData.restaurantFood) updates.restaurantFood = businessData.restaurantFood;
-      if (businessData.faq) updates.faq = businessData.faq;
-      
-      // Features
-      if (businessData.features) {
-        updates.reservationEnabled = businessData.features.includes("reservation");
-        updates.transferEnabled = businessData.features.includes("transfer");
-        updates.restaurantEnabled = businessData.features.includes("restaurant");
-        updates.spaEnabled = businessData.features.includes("spa");
-        updates.gymEnabled = businessData.features.includes("gym");
-        updates.poolEnabled = businessData.features.includes("pool");
-        updates.businessCenterEnabled = businessData.features.includes("business_center");
-      }
-      
-      if (businessData.reservationLink) updates.reservationLink = businessData.reservationLink;
-      if (businessData.transferPolicy) updates.transferPolicy = businessData.transferPolicy;
-
-      Object.entries(updates).forEach(([key, value]) => {
-        form.setValue(key as keyof BusinessInfoFormData, value);
-      });
-    };
-
-    populateForm();
-  }, [businessData, form, navigate, toast]);
+  }, [businessData, form]);
 
   const onSubmit = async (data: BusinessInfoFormData) => {
     setIsLoading(true);
@@ -163,7 +155,9 @@ const BusinessInfoPage = () => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Business Information</h1>
-            <p className="text-muted-foreground">Review and update your business details</p>
+            <p className="text-muted-foreground">
+              {businessData ? "Review and update your business details" : "Enter your business information manually"}
+            </p>
           </div>
         </div>
 

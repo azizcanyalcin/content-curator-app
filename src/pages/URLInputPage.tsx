@@ -74,7 +74,7 @@ const URLInputPage = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Business Information Extractor</CardTitle>
           <CardDescription>
-            Enter your website URL to automatically extract business information
+            Enter your website URL to automatically extract business information, or skip to enter manually
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -97,16 +97,27 @@ const URLInputPage = () => {
                   </FormItem>
                 )}
               />
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={submitMutation.isPending}
-              >
-                {submitMutation.isPending && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {submitMutation.isPending ? "Processing..." : "Extract Business Info"}
-              </Button>
+              <div className="space-y-3">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={submitMutation.isPending}
+                >
+                  {submitMutation.isPending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {submitMutation.isPending ? "Processing..." : "Extract Business Info"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate("/business-info")}
+                  disabled={submitMutation.isPending}
+                >
+                  Skip and Enter Manually
+                </Button>
+              </div>
             </form>
           </Form>
         </CardContent>
