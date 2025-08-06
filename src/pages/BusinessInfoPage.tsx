@@ -13,6 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save } from "lucide-react";
+import { FAQManager, FAQ } from "@/components/FAQManager";
 
 const businessInfoSchema = z.object({
   agentName: z.string().min(1, "Agent name is required"),
@@ -20,7 +21,11 @@ const businessInfoSchema = z.object({
   address: z.string().min(1, "Address is required"),
   concept: z.string().min(1, "Concept is required"),
   restaurantFood: z.string().optional(),
-  faq: z.string().optional(),
+  faqs: z.array(z.object({
+    id: z.string(),
+    question: z.string(),
+    answer: z.string(),
+  })).default([]),
   
   // Feature toggles
   reservationEnabled: z.boolean().default(false),
@@ -46,6 +51,7 @@ const BusinessInfoPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
 
   const businessData = location.state?.businessData;
 
@@ -57,7 +63,7 @@ const BusinessInfoPage = () => {
       address: "",
       concept: "",
       restaurantFood: "",
-      faq: "",
+      faqs: [],
       reservationEnabled: false,
       transferEnabled: false,
       restaurantEnabled: false,
@@ -85,7 +91,23 @@ const BusinessInfoPage = () => {
         if (businessData.address) updates.address = businessData.address;
         if (businessData.concept) updates.concept = businessData.concept;
         if (businessData.restaurantFood) updates.restaurantFood = businessData.restaurantFood;
-        if (businessData.faq) updates.faq = businessData.faq;
+        
+        // Handle FAQ migration: convert old string format to new array format
+        if (businessData.faq) {
+          if (typeof businessData.faq === 'string') {
+            // Migrate old string FAQ to new format
+            const migrationFAQ: FAQ = {
+              id: '1',
+              question: 'General FAQ',
+              answer: businessData.faq
+            };
+            updates.faqs = [migrationFAQ];
+            setFaqs([migrationFAQ]);
+          } else if (Array.isArray(businessData.faq)) {
+            updates.faqs = businessData.faq;
+            setFaqs(businessData.faq);
+          }
+        }
         
         // Features
         if (businessData.features) {
@@ -113,8 +135,9 @@ const BusinessInfoPage = () => {
   const onSubmit = async (data: BusinessInfoFormData) => {
     setIsLoading(true);
     try {
-      // Here you would typically save the data to your backend
-      console.log("Saving business info:", data);
+      // Include FAQs in the form data
+      const dataWithFAQs = { ...data, faqs };
+      console.log("Saving business info:", dataWithFAQs);
       
       toast({
         title: "Success",
@@ -525,26 +548,16 @@ const BusinessInfoPage = () => {
               <CardHeader>
                 <CardTitle>FAQ</CardTitle>
                 <CardDescription>
-                  Frequently asked questions and answers
+                  Manage frequently asked questions and answers for your business
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <FormField
-                  control={form.control}
-                  name="faq"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>FAQ Content</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Add your frequently asked questions and answers here..." 
-                          className="min-h-[150px]"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                <FAQManager 
+                  faqs={faqs} 
+                  onFAQsChange={(newFAQs) => {
+                    setFaqs(newFAQs);
+                    form.setValue('faqs', newFAQs);
+                  }} 
                 />
               </CardContent>
             </Card>
